@@ -9,10 +9,8 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 import net.mamoe.mirai.event.events.MemberLeaveEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +48,7 @@ public final class JavaPluginMain extends JavaPlugin {
 
         this.reloadPluginData(BlackList.INSTANCE); // 读取文件等
 
-        Map<Long, List<Long>> list = BlackList.INSTANCE.blackList.get();
+        Map<Long, Object> list = BlackList.INSTANCE.blackList.get();
 
         EventChannel<Event> eventChannel = GlobalEventChannel.INSTANCE.parentScope(this);
         eventChannel.subscribeAlways(MemberJoinRequestEvent.class, g -> {
@@ -64,7 +62,7 @@ public final class JavaPluginMain extends JavaPlugin {
             if (!list.containsKey(g.getGroupId())) {
                 list.put(g.getGroupId(), new ArrayList<>());
             }
-            if (list.get(g.getGroupId()).contains(g.getFromId())) {
+            if (((List)(list.get(g.getGroupId()))).contains(g.getFromId())) {
                 g.reject(Boolean.FALSE, "主动退群不再接受");
             }
 
@@ -78,7 +76,7 @@ public final class JavaPluginMain extends JavaPlugin {
             if (!list.containsKey(g.getGroupId())) {
                 list.put(g.getGroupId(), new ArrayList<>());
             }
-            list.get(g.getGroupId()).add(g.getMember().getId());
+            ((List)(list.get(g.getGroupId()))).add(g.getMember().getId());
             System.out.println(list.get(g.getGroupId()));
 
             g.getGroup().sendMessage(String.format("%s主动退群！已加入黑名单", g.getMember().getId()));
