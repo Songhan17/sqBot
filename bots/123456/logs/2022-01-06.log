@@ -1,9 +1,0 @@
-[0m2022-01-06 17:56:33 V/Net 123456: No server list cached.[0m
-[92m2022-01-06 17:56:34 I/Net 123456: ECDH key is invalid, start to fetch ecdh public key from server.[0m
-[92m2022-01-06 17:56:35 I/Net 123456: Successfully fetched ecdh public key from server.[0m
-[0m2022-01-06 17:56:35 V/Net 123456: Send: wtlogin.login[0m
-[0m2022-01-06 17:56:35 V/Net 123456: Recv: wtlogin.login[0m
-[0m2022-01-06 17:56:42 V/Net 123456: Send: wtlogin.login[0m
-[0m2022-01-06 17:56:42 V/Net 123456: Recv: wtlogin.login[0m
-[0m2022-01-06 17:56:45 V/Net 123456: Send: wtlogin.login[0m
-[0m2022-01-06 17:56:45 V/Net 123456: Recv: wtlogin.login[0m
