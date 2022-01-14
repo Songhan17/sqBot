@@ -1,11 +1,8 @@
 package com.han.main;
 
 import com.han.model.BlackList;
-import io.ktor.util.collections.CollectionUtilsKt;
-import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.BotFactory;
+import com.han.setu.Thread;
 import net.mamoe.mirai.console.extension.PluginComponentStorage;
-import net.mamoe.mirai.console.internal.data.CollectionUtilKt;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -15,8 +12,8 @@ import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
-import net.mamoe.mirai.event.events.MemberLeaveEvent;
-import net.mamoe.mirai.utils.BotConfiguration;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.MessageUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -41,6 +38,10 @@ import java.util.*;
 public final class JavaPluginMain extends JavaPlugin {
     public static JavaPluginMain INSTANCE = new JavaPluginMain();
     public static long PERM = 88888L;
+    short maxPullCount = 5;
+    short maxThread = 5;
+    short pullCount = 0;
+    public static short threadRunning = 0;
 
     private JavaPluginMain() {
         super(new JvmPluginDescriptionBuilder("com.han.main", "0.1.0")
@@ -60,7 +61,18 @@ public final class JavaPluginMain extends JavaPlugin {
     @Override
     public void onEnable() {
 
+        System.setProperty("http.agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;" +
+                " Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729;" +
+                " Media Center PC 6.0; .NET4.0C; .NET4.0E; QQBrowser/7.0.3698.400)");
+
         Map<Long, List<Long>> list = BlackList.getInstance().getBlackList();
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                pullCount = 0;
+            }
+        }, 60 * 1000, 60 * 1000); //一分钟自动重置变量
 
         EventChannel<Event> eventChannel = GlobalEventChannel.INSTANCE.parentScope(this);
         eventChannel.subscribeAlways(MemberJoinRequestEvent.class, g -> {
@@ -78,21 +90,6 @@ public final class JavaPluginMain extends JavaPlugin {
                 g.reject(Boolean.FALSE, "黑名单用户暂不接受加入");
             }
         });
-//        eventChannel.subscribeAlways(MemberLeaveEvent.Quit.class, g -> {
-//            // 群号
-////            System.out.println(g.getGroupId());
-////            // 退群人QQ号
-////            System.out.println(g.getMember().getId());
-//
-//            if (!list.containsKey(g.getGroupId())) {
-//                list.put(g.getGroupId(), new ArrayList<>());
-//            }
-//            list.get(g.getGroupId()).add(g.getMember().getId());
-////            System.out.println(list.get(g.getGroupId()));
-//            BlackList.getInstance().save();
-//            g.getGroup().sendMessage(String.format("%s退群了！", g.getMember().getId()));
-//        });
-
 
         eventChannel.subscribeAlways(GroupMessageEvent.class, g -> {
             List<Long> perm = list.get(PERM);
@@ -141,6 +138,16 @@ public final class JavaPluginMain extends JavaPlugin {
                 } catch (Exception e) {
                     g.getGroup().sendMessage(getFailed());
                 }
+            }
+            String setu = g.getMessage().contentToString();
+            if (setu.toLowerCase().contains("来点涩图") || (setu.toLowerCase().contains("来点") &&
+                    setu.toLowerCase().contains("涩图"))) {
+                if (pullCount > maxPullCount || threadRunning >= maxThread) {
+                    g.getGroup().sendMessage("别冲太快，要冲死了惹");
+                    return;
+                }
+                pullCount++;
+                new Thread().newThread(g, perm);
             }
         });
 
@@ -232,7 +239,7 @@ public final class JavaPluginMain extends JavaPlugin {
         });
     }
 
-    private static String getBlack(Map<Long, List<Long>> list){
+    private static String getBlack(Map<Long, List<Long>> list) {
         StringBuffer sb = new StringBuffer();
         if (!list.isEmpty()) {
             for (Map.Entry<Long, List<Long>> entry : list.entrySet()) {
@@ -249,7 +256,7 @@ public final class JavaPluginMain extends JavaPlugin {
         return sb.toString();
     }
 
-    private static String getFailed(){
+    private static String getFailed() {
         StringBuffer sb = new StringBuffer();
         sb.append("操作:").append("\r\n");
         sb.append("回复   添加黑名单#QQ号   增加权限人员。 例:添加黑名单#123456").append("\r\n");
@@ -257,7 +264,7 @@ public final class JavaPluginMain extends JavaPlugin {
         return sb.toString();
     }
 
-    private static String getPermission(Map<Long, List<Long>> list){
+    private static String getPermission(Map<Long, List<Long>> list) {
         StringBuffer sb = new StringBuffer();
         List<Long> longs = list.get(PERM);
         sb.append("权限：").append(longs).append("\r\n");
