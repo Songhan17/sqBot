@@ -1,6 +1,7 @@
 package com.han.setu;
 
 import com.google.gson.Gson;
+import com.han.main.JavaPluginMain;
 import com.han.model.ImgData;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.Image;

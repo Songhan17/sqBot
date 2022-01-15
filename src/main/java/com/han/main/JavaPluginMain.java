@@ -12,10 +12,9 @@ import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -38,13 +37,14 @@ import java.util.*;
 public final class JavaPluginMain extends JavaPlugin {
     public static JavaPluginMain INSTANCE = new JavaPluginMain();
     public static long PERM = 88888L;
-    short maxPullCount = 5;
-    short maxThread = 5;
-    short pullCount = 0;
-    public static short threadRunning = 0;
+    short maxCount = 5;
+    LocalDateTime preTime;
+    boolean canSePic;
+    static Map<Long, LocalDateTime> preTimes;
+    static Map<Long, Integer> coolCount;
 
     private JavaPluginMain() {
-        super(new JvmPluginDescriptionBuilder("com.han.main", "0.1.0")
+        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.4")
                 .info("EG")
                 .author("十七")
                 .name("sq群管机器人")
@@ -56,6 +56,10 @@ public final class JavaPluginMain extends JavaPlugin {
     public void onLoad(@NotNull PluginComponentStorage $this$onLoad) {
         super.onLoad($this$onLoad);
         BlackList.getInstance().Load();
+        canSePic = true;
+        preTime = LocalDateTime.now();
+        preTimes = new HashMap<>();
+        coolCount = new HashMap<>();
     }
 
     @Override
@@ -67,12 +71,6 @@ public final class JavaPluginMain extends JavaPlugin {
 
         Map<Long, List<Long>> list = BlackList.getInstance().getBlackList();
 
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                pullCount = 0;
-            }
-        }, 60 * 1000, 60 * 1000); //一分钟自动重置变量
 
         EventChannel<Event> eventChannel = GlobalEventChannel.INSTANCE.parentScope(this);
         eventChannel.subscribeAlways(MemberJoinRequestEvent.class, g -> {
@@ -139,15 +137,38 @@ public final class JavaPluginMain extends JavaPlugin {
                     g.getGroup().sendMessage(getFailed());
                 }
             }
-            String setu = g.getMessage().contentToString();
-            if (setu.toLowerCase().contains("来点涩图") || (setu.toLowerCase().contains("来点") &&
-                    setu.toLowerCase().contains("涩图"))) {
-                if (pullCount > maxPullCount || threadRunning >= maxThread) {
-                    g.getGroup().sendMessage("别冲太快，要冲死了惹");
-                    return;
+            String content = g.getMessage().contentToString().replace("色图", "涩图");
+            if (content.toLowerCase().contains("来点涩图") || (content.toLowerCase().contains("来点") &&
+                    content.toLowerCase().contains("涩图"))) {
+                if (!preTimes.containsKey(g.getGroup().getId())) {
+                    preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusDays(-1));
+                    coolCount.put(g.getGroup().getId(), 0);
                 }
-                pullCount++;
-                new Thread().newThread(g, perm);
+                if (canSendPic(preTimes.get(g.getGroup().getId()))) {
+                    canSePic = true;
+                }
+                if (canSePic) {
+                    if (coolCount.get(g.getGroup().getId()) > maxCount) {
+                        g.getGroup().sendMessage("别冲太快，要冲死了惹,休息一分钟");
+                        preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusMinutes(1L));
+                        coolCount.put(g.getGroup().getId(), 0);
+                        canSePic = false;
+                        return;
+                    }
+                    if (preTimes.get(g.getGroup().getId()).plusMinutes(1L).isBefore(LocalDateTime.now())) {
+                        coolCount.put(g.getGroup().getId(), 1);
+                    } else {
+                        coolCount.put(g.getGroup().getId(), coolCount.get(g.getGroup().getId()) + 1);
+                    }
+                    preTimes.put(g.getGroup().getId(), LocalDateTime.now());
+                    new Thread().newThread(g, perm);
+                }
+            }
+            if (canSePic && (content.toLowerCase().contains("不可以色色") || content.toLowerCase().contains("不可以涩涩"))) {
+                canSePic = false;
+                preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusMinutes(10L));
+                coolCount.put(g.getGroup().getId(), 0);
+                g.getGroup().sendMessage("不可以色色！休息10分钟");
             }
         });
 
@@ -228,9 +249,19 @@ public final class JavaPluginMain extends JavaPlugin {
                     }
                     if (origin.contains("删除key")) {
                         String[] split = origin.split(":");
-                        Long number = Long.parseLong(split[0]);
+                        Long number = Long.parseLong(split[1]);
                         list.keySet().removeIf(key -> key == number);
                         g.getFriend().sendMessage(list.toString());
+                    }
+                    if (origin.contains("删除冷却")) {
+                        String[] split = origin.split(":");
+                        Long number = Long.parseLong(split[1]);
+                        if (preTimes.containsKey(number)) {
+                            preTimes.put(number, LocalDateTime.now().plusDays(-1));
+                            coolCount.put(number, 0);
+                        }
+                        g.getFriend().sendMessage(preTimes.toString());
+                        g.getFriend().sendMessage(coolCount.toString());
                     }
                 } catch (Exception e) {
                     g.getFriend().sendMessage("操作失败，系统异常");
@@ -259,8 +290,8 @@ public final class JavaPluginMain extends JavaPlugin {
     private static String getFailed() {
         StringBuffer sb = new StringBuffer();
         sb.append("操作:").append("\r\n");
-        sb.append("回复   添加黑名单#QQ号   增加权限人员。 例:添加黑名单#123456").append("\r\n");
-        sb.append("回复   移除黑名单#QQ号   移除权限人员。 例:移除黑名单#123456");
+        sb.append("回复   添加黑名单#QQ号   添加黑名单人员。 例:添加黑名单#123456").append("\r\n");
+        sb.append("回复   移除黑名单#QQ号   移除黑名单人员。 例:移除黑名单#123456");
         return sb.toString();
     }
 
@@ -272,6 +303,10 @@ public final class JavaPluginMain extends JavaPlugin {
         sb.append("回复   增加:QQ号   增加权限人员。 ex:增加:123456").append("\r\n");
         sb.append("回复   移除:QQ号   移除权限人员。 ex:移除:123456");
         return sb.toString();
+    }
+
+    private static boolean canSendPic(LocalDateTime pre) {
+        return LocalDateTime.now().isAfter(pre);
     }
 
 }
