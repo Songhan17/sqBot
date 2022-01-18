@@ -41,7 +41,7 @@ public final class JavaPluginMain extends JavaPlugin {
     LocalDateTime preTime;
     boolean canSePic;
     static Map<Long, LocalDateTime> preTimes;
-    static Map<Long, Integer> coolCount;
+    public static Map<Long, Integer> coolCount;
 
     private JavaPluginMain() {
         super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.4")
@@ -149,9 +149,7 @@ public final class JavaPluginMain extends JavaPlugin {
                 }
                 if (canSePic) {
                     if (preTimes.get(g.getGroup().getId()).plusMinutes(1L).isBefore(LocalDateTime.now())) {
-                        coolCount.put(g.getGroup().getId(), 1);
-                    } else {
-                        coolCount.put(g.getGroup().getId(), coolCount.get(g.getGroup().getId()) + 1);
+                        coolCount.put(g.getGroup().getId(), 0);
                     }
                     if (coolCount.get(g.getGroup().getId()) > maxCount) {
                         g.getGroup().sendMessage("别冲太快，要冲死了惹,休息一分钟");
@@ -226,7 +224,7 @@ public final class JavaPluginMain extends JavaPlugin {
                             list.get(PERM).add(number);
                         }
                         BlackList.getInstance().save();
-                        g.getFriend().sendMessage(getBlack(list));
+                        g.getFriend().sendMessage(getPermission(list));
                         return;
                     }
                     if (origin.contains("移除:")) {

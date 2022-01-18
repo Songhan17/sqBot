@@ -13,9 +13,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.han.main.JavaPluginMain.coolCount;
 
 public class Thread extends java.lang.Thread {
     GroupMessageEvent e;
@@ -30,7 +33,7 @@ public class Thread extends java.lang.Thread {
     @Override
     public void run() {
         String msgContent = e.getMessage().contentToString().toLowerCase().replace("来点", "")
-                .replace("涩图", "");
+                .replace("涩图", "").replace("色图", "");
         boolean isR18 = false;
         if (perm.contains(e.getSender().getId()) && msgContent.contains("r18")) {
             isR18 = true;
@@ -40,18 +43,23 @@ public class Thread extends java.lang.Thread {
         try {
             content = Connection.getURL(msgContent, isR18);
         } catch (Exception exception) {
-            e.getGroup().sendMessage("服务器宕机了惹");
+//            e.getGroup().sendMessage("服务器宕机了惹");
+            return;
         }
         if (content.equals("")) {
-            e.getGroup().sendMessage("xp太怪，搜不到图了惹");
+//            e.getGroup().sendMessage("xp太怪，搜不到图了惹");
             return;
         }
 
         Gson gson = new Gson();
         ImgData imgData = gson.fromJson(content, ImgData.class);
-
+        if (imgData.getData().equals("")){
+            e.getGroup().sendMessage("没有找到对应的结果呢，是不是xp太怪了惹");
+            return;
+        }
         if (!imgData.getError().equals("")){
-            e.getGroup().sendMessage("遇到错误了惹: " + imgData.getError());
+//            e.getGroup().sendMessage("遇到错误了惹: " + imgData.getError());
+            return;
         }else {
             try {
                 FileInputStream is = new FileInputStream(httpRequest(imgData.getData().get(0).getUrls().getOriginal()
@@ -60,14 +68,16 @@ public class Thread extends java.lang.Thread {
                 Image image;
                 image = ExternalResource.uploadAsImage(is, e.getGroup());
                 e.getGroup().sendMessage(image);
+                coolCount.put(e.getGroup().getId(), coolCount.get(e.getGroup().getId()) + 1);
             } catch (Exception ex) {
-                e.getGroup().sendMessage("遇到错误了惹");
+//                e.getGroup().sendMessage("遇到错误了惹");
+                return;
             }
         }
     }
 
     private static String httpRequest(String uri, String uid, String ext) throws Exception {
-        String path = "./data/Image/" + "setu" + "/";
+        String path = "./data/Image/" + LocalDate.now() + "/";
         String filePath = path + uid + "." + ext;
         URL url = new URL(uri);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
