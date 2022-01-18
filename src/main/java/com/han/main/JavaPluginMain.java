@@ -148,17 +148,17 @@ public final class JavaPluginMain extends JavaPlugin {
                     canSePic = true;
                 }
                 if (canSePic) {
+                    if (preTimes.get(g.getGroup().getId()).plusMinutes(1L).isBefore(LocalDateTime.now())) {
+                        coolCount.put(g.getGroup().getId(), 1);
+                    } else {
+                        coolCount.put(g.getGroup().getId(), coolCount.get(g.getGroup().getId()) + 1);
+                    }
                     if (coolCount.get(g.getGroup().getId()) > maxCount) {
                         g.getGroup().sendMessage("别冲太快，要冲死了惹,休息一分钟");
                         preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusMinutes(1L));
                         coolCount.put(g.getGroup().getId(), 0);
                         canSePic = false;
                         return;
-                    }
-                    if (preTimes.get(g.getGroup().getId()).plusMinutes(1L).isBefore(LocalDateTime.now())) {
-                        coolCount.put(g.getGroup().getId(), 1);
-                    } else {
-                        coolCount.put(g.getGroup().getId(), coolCount.get(g.getGroup().getId()) + 1);
                     }
                     preTimes.put(g.getGroup().getId(), LocalDateTime.now());
                     new Thread().newThread(g, perm);
