@@ -7,6 +7,9 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.utils.ExternalResource;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -51,9 +54,11 @@ public class Thread extends java.lang.Thread {
             e.getGroup().sendMessage("遇到错误了惹: " + imgData.getError());
         }else {
             try {
-                InputStream inputStream = httpRequest(imgData.getData().get(0).getUrls().getOriginal().replace("i.pixiv.cat", "i.pixiv.re"));
+                FileInputStream is = new FileInputStream(httpRequest(imgData.getData().get(0).getUrls().getOriginal()
+                    .replace("i.pixiv.cat", "i.pixiv.re"), imgData.getData().get(0).getUid(),
+                    imgData.getData().get(0).getExt()));
                 Image image;
-                image = ExternalResource.uploadAsImage(inputStream, e.getGroup());
+                image = ExternalResource.uploadAsImage(is, e.getGroup());
                 e.getGroup().sendMessage(image);
             } catch (Exception ex) {
                 e.getGroup().sendMessage("遇到错误了惹");
@@ -61,15 +66,40 @@ public class Thread extends java.lang.Thread {
         }
     }
 
-    private static InputStream httpRequest(String uri) throws Exception {
+    private static String httpRequest(String uri, String uid, String ext) throws Exception {
+        String path = "./data/Image/" + "setu" + "/";
+        String filePath = path + uid + "." + ext;
         URL url = new URL(uri);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("referer", ""); //这是破解防盗链添加的参数
         conn.addRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67");
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5 * 1000);
+        InputStream inStream = conn.getInputStream();//通过输入流获取图片数据
+        readInputStream(inStream, filePath, path);
+        return filePath;
+    }
 
-        return conn.getInputStream();
+    /*
+    lolicon保存图片
+     */
+    private static void readInputStream(InputStream inStream, String filePath, String path) throws Exception{
+        File file = new File(path);
+        File file1 = new File(filePath);
+        if (!file.exists()) file.mkdirs();
+        if (!file1.exists()){
+            FileOutputStream fos = new FileOutputStream(new File(filePath));
+            byte[] buffer = new byte[102400];
+            int len = 0;
+            while( (len=inStream.read(buffer)) != -1 ){
+                fos.write(buffer, 0, len);
+            }
+            inStream.close();
+            fos.flush();
+            fos.close();
+        }else {
+            inStream.close();
+        }
     }
 
 }

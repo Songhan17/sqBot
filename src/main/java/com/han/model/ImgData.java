@@ -25,6 +25,26 @@ public class ImgData {
     public class Data {
         Urls urls;
 
+        String uid;
+
+        String ext;
+
+        public String getUid() {
+            return uid;
+        }
+
+        public void setUid(final String uid) {
+            this.uid = uid;
+        }
+
+        public String getExt() {
+            return ext;
+        }
+
+        public void setExt(final String ext) {
+            this.ext = ext;
+        }
+
         public Urls getUrls() {
             return urls;
         }
