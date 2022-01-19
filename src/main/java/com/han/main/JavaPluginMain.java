@@ -144,9 +144,7 @@ public final class JavaPluginMain extends JavaPlugin {
                     preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusDays(-1));
                     coolCount.put(g.getGroup().getId(), 0);
                 }
-                if (canSendPic(preTimes.get(g.getGroup().getId()))) {
-                    canSePic = true;
-                }
+                canSePic = canSendPic(preTimes.get(g.getGroup().getId()));
                 if (canSePic) {
                     if (preTimes.get(g.getGroup().getId()).plusMinutes(1L).isBefore(LocalDateTime.now())) {
                         coolCount.put(g.getGroup().getId(), 0);
