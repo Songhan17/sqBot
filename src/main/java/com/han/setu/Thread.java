@@ -32,6 +32,10 @@ public class Thread extends java.lang.Thread {
 
     @Override
     public void run() {
+        if (e.getMessage().contentToString().contains("三次元")) {
+            sendImage(e, "https://api.vvhan.com/api/girl", "333/"+ System.currentTimeMillis(), "png");
+            return;
+        }
         String msgContent = e.getMessage().contentToString().toLowerCase().replace("来点", "")
                 .replace("涩图", "").replace("色图", "");
         boolean isR18 = false;
@@ -53,7 +57,7 @@ public class Thread extends java.lang.Thread {
 
         Gson gson = new Gson();
         ImgData imgData = gson.fromJson(content, ImgData.class);
-        if (imgData.getData().equals("")){
+        if (imgData.getData().isEmpty()){
             e.getGroup().sendMessage("没有找到对应的结果呢，是不是xp太怪了惹");
             return;
         }
@@ -61,18 +65,21 @@ public class Thread extends java.lang.Thread {
 //            e.getGroup().sendMessage("遇到错误了惹: " + imgData.getError());
             return;
         }else {
-            try {
-                FileInputStream is = new FileInputStream(httpRequest(imgData.getData().get(0).getUrls().getOriginal()
-                    .replace("i.pixiv.cat", "i.pixiv.re"), imgData.getData().get(0).getUid(),
-                    imgData.getData().get(0).getExt()));
-                Image image;
-                image = ExternalResource.uploadAsImage(is, e.getGroup());
-                e.getGroup().sendMessage(image);
-                coolCount.put(e.getGroup().getId(), coolCount.get(e.getGroup().getId()) + 1);
-            } catch (Exception ex) {
-//                e.getGroup().sendMessage("遇到错误了惹");
-                return;
-            }
+            sendImage(e, imgData.getData().get(0).getUrls().getOriginal()
+                    .replace("i.pixiv.cat", "i.pixiv.re"),
+                "222/" + imgData.getData().get(0).getUid(),
+                imgData.getData().get(0).getExt());
+        }
+    }
+
+    private static void sendImage(GroupMessageEvent e, String url, String uid, String ext){
+        try {
+            FileInputStream is = new FileInputStream(httpRequest(url, uid, ext));
+            Image image;
+            image = ExternalResource.uploadAsImage(is, e.getGroup());
+            e.getGroup().sendMessage(image);
+            coolCount.put(e.getGroup().getId(), coolCount.get(e.getGroup().getId()) + 1);
+        } catch (Exception ignored) {
         }
     }
 

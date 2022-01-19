@@ -44,7 +44,7 @@ public final class JavaPluginMain extends JavaPlugin {
     public static Map<Long, Integer> coolCount;
 
     private JavaPluginMain() {
-        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.4")
+        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.6")
                 .info("EG")
                 .author("十七")
                 .name("sq群管机器人")
@@ -138,8 +138,8 @@ public final class JavaPluginMain extends JavaPlugin {
                 }
             }
             String content = g.getMessage().contentToString().replace("色图", "涩图");
-            if (content.toLowerCase().contains("来点涩图") || (content.toLowerCase().contains("来点") &&
-                    content.toLowerCase().contains("涩图"))) {
+            if (content.toLowerCase().contains("三次元") || content.toLowerCase().contains("来点涩图")
+                || (content.toLowerCase().contains("来点") && content.toLowerCase().contains("涩图"))) {
                 if (!preTimes.containsKey(g.getGroup().getId())) {
                     preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusDays(-1));
                     coolCount.put(g.getGroup().getId(), 0);
