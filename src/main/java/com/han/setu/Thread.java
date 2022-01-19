@@ -59,7 +59,7 @@ public class Thread extends java.lang.Thread {
         Gson gson = new Gson();
         ImgData imgData = gson.fromJson(content, ImgData.class);
         if (imgData.getData().isEmpty()){
-            e.getGroup().sendMessage("没有找到对应的结果呢，是不是xp太怪了惹");
+//            e.getGroup().sendMessage("没有找到对应的结果呢，是不是xp太怪了惹");
             return;
         }
         if (!imgData.getError().equals("")){

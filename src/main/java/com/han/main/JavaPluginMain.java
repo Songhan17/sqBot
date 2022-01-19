@@ -261,6 +261,13 @@ public final class JavaPluginMain extends JavaPlugin {
                         g.getFriend().sendMessage(preTimes.toString());
                         g.getFriend().sendMessage(coolCount.toString());
                     }
+                    if (origin.contains("不可以色色")) {
+                        preTimes.replaceAll((i, v) -> LocalDateTime.now().plusMinutes(10L));
+                        coolCount.replaceAll((i, v) -> 0);
+
+                        g.getFriend().sendMessage(preTimes.toString());
+                        g.getFriend().sendMessage(coolCount.toString());
+                    }
                 } catch (Exception e) {
                     g.getFriend().sendMessage("操作失败，系统异常");
                 }
