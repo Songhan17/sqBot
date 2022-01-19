@@ -33,7 +33,8 @@ public class Thread extends java.lang.Thread {
     @Override
     public void run() {
         if (e.getMessage().contentToString().contains("三次元")) {
-            sendImage(e, "https://api.vvhan.com/api/girl", "333/"+ System.currentTimeMillis(), "png");
+            sendImage(e, "https://api.vvhan.com/api/girl", "333",
+                String.valueOf(System.currentTimeMillis()), "png");
             return;
         }
         String msgContent = e.getMessage().contentToString().toLowerCase().replace("来点", "")
@@ -67,14 +68,14 @@ public class Thread extends java.lang.Thread {
         }else {
             sendImage(e, imgData.getData().get(0).getUrls().getOriginal()
                     .replace("i.pixiv.cat", "i.pixiv.re"),
-                "222/" + imgData.getData().get(0).getUid(),
+                "222", imgData.getData().get(0).getUid(),
                 imgData.getData().get(0).getExt());
         }
     }
 
-    private static void sendImage(GroupMessageEvent e, String url, String uid, String ext){
+    private static void sendImage(GroupMessageEvent e, String url, String dir, String uid, String ext){
         try {
-            FileInputStream is = new FileInputStream(httpRequest(url, uid, ext));
+            FileInputStream is = new FileInputStream(httpRequest(url, dir, uid, ext));
             Image image;
             image = ExternalResource.uploadAsImage(is, e.getGroup());
             e.getGroup().sendMessage(image);
@@ -83,8 +84,8 @@ public class Thread extends java.lang.Thread {
         }
     }
 
-    private static String httpRequest(String uri, String uid, String ext) throws Exception {
-        String path = "./data/Image/" + LocalDate.now() + "/";
+    private static String httpRequest(String uri, String dir, String uid, String ext) throws Exception {
+        String path = "./data/Image/" + LocalDate.now() + "/" + dir + "/";
         String filePath = path + uid + "." + ext;
         URL url = new URL(uri);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
