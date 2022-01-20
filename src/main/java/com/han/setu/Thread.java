@@ -38,7 +38,7 @@ public class Thread extends java.lang.Thread {
             return;
         }
         String msgContent = e.getMessage().contentToString().toLowerCase().replace("来点", "")
-                .replace("涩图", "").replace("色图", "");
+            .replace("涩图", "").replace("色图", "");
         boolean isR18 = false;
         if (perm.contains(e.getSender().getId()) && msgContent.contains("r18")) {
             isR18 = true;
@@ -58,14 +58,14 @@ public class Thread extends java.lang.Thread {
 
         Gson gson = new Gson();
         ImgData imgData = gson.fromJson(content, ImgData.class);
-        if (imgData.getData().isEmpty()){
+        if (imgData.getData().isEmpty()) {
 //            e.getGroup().sendMessage("没有找到对应的结果呢，是不是xp太怪了惹");
             return;
         }
-        if (!imgData.getError().equals("")){
+        if (!imgData.getError().equals("")) {
 //            e.getGroup().sendMessage("遇到错误了惹: " + imgData.getError());
             return;
-        }else {
+        } else {
             sendImage(e, imgData.getData().get(0).getUrls().getOriginal()
                     .replace("i.pixiv.cat", "i.pixiv.re"),
                 "222", imgData.getData().get(0).getUid(),
@@ -73,7 +73,7 @@ public class Thread extends java.lang.Thread {
         }
     }
 
-    private static void sendImage(GroupMessageEvent e, String url, String dir, String uid, String ext){
+    private static void sendImage(GroupMessageEvent e, String url, String dir, String uid, String ext) {
         try {
             FileInputStream is = new FileInputStream(httpRequest(url, dir, uid, ext));
             Image image;
@@ -90,7 +90,8 @@ public class Thread extends java.lang.Thread {
         URL url = new URL(uri);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("referer", ""); //这是破解防盗链添加的参数
-        conn.addRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67");
+        conn.addRequestProperty("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67");
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5 * 1000);
         InputStream inStream = conn.getInputStream();//通过输入流获取图片数据
@@ -101,21 +102,23 @@ public class Thread extends java.lang.Thread {
     /*
     lolicon保存图片
      */
-    private static void readInputStream(InputStream inStream, String filePath, String path) throws Exception{
+    private static void readInputStream(InputStream inStream, String filePath, String path) throws Exception {
         File file = new File(path);
         File file1 = new File(filePath);
-        if (!file.exists()) file.mkdirs();
-        if (!file1.exists()){
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        if (!file1.exists()) {
             FileOutputStream fos = new FileOutputStream(new File(filePath));
             byte[] buffer = new byte[102400];
             int len = 0;
-            while( (len=inStream.read(buffer)) != -1 ){
+            while ((len = inStream.read(buffer)) != -1) {
                 fos.write(buffer, 0, len);
             }
             inStream.close();
             fos.flush();
             fos.close();
-        }else {
+        } else {
             inStream.close();
         }
     }

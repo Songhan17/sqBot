@@ -15,7 +15,10 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -45,10 +48,10 @@ public final class JavaPluginMain extends JavaPlugin {
 
     private JavaPluginMain() {
         super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.6")
-                .info("EG")
-                .author("十七")
-                .name("sq群管机器人")
-                .build());
+            .info("EG")
+            .author("十七")
+            .name("sq群管机器人")
+            .build());
         INSTANCE = this;
     }
 
@@ -66,8 +69,8 @@ public final class JavaPluginMain extends JavaPlugin {
     public void onEnable() {
 
         System.setProperty("http.agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;" +
-                " Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729;" +
-                " Media Center PC 6.0; .NET4.0C; .NET4.0E; QQBrowser/7.0.3698.400)");
+            " Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729;" +
+            " Media Center PC 6.0; .NET4.0C; .NET4.0E; QQBrowser/7.0.3698.400)");
 
         Map<Long, List<Long>> list = BlackList.getInstance().getBlackList();
 
@@ -138,8 +141,8 @@ public final class JavaPluginMain extends JavaPlugin {
                 }
             }
             String content = g.getMessage().contentToString().replace("色图", "涩图");
-            if (content.toLowerCase().contains("三次元") || content.toLowerCase().contains("来点涩图")
-                || (content.toLowerCase().contains("来点") && content.toLowerCase().contains("涩图"))) {
+            if (content.toLowerCase().contains("来点涩图") || (content.toLowerCase().contains("来点")
+                && content.toLowerCase().contains("涩图"))) {
                 if (!preTimes.containsKey(g.getGroup().getId())) {
                     preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusDays(-1));
                     coolCount.put(g.getGroup().getId(), 0);
