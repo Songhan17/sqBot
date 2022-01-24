@@ -47,7 +47,7 @@ public final class JavaPluginMain extends JavaPlugin {
     public static Map<Long, Integer> coolCount;
 
     private JavaPluginMain() {
-        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.6")
+        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.7")
             .info("EG")
             .author("十七")
             .name("sq群管机器人")

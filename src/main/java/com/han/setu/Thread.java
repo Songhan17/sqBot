@@ -6,17 +6,19 @@ import com.han.model.ImgData;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.utils.ExternalResource;
+import org.apache.commons.codec.digest.DigestUtils;
+import sun.security.provider.MD5;
+import sun.security.rsa.RSASignature;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.han.main.JavaPluginMain.coolCount;
 
@@ -34,7 +36,7 @@ public class Thread extends java.lang.Thread {
     public void run() {
         if (e.getMessage().contentToString().contains("三次元")) {
             sendImage(e, "https://api.vvhan.com/api/girl", "333",
-                String.valueOf(System.currentTimeMillis()), "png");
+                null, "png");
             return;
         }
         String msgContent = e.getMessage().contentToString().toLowerCase().replace("来点", "")
@@ -74,19 +76,25 @@ public class Thread extends java.lang.Thread {
     }
 
     private static void sendImage(GroupMessageEvent e, String url, String dir, String uid, String ext) {
+        FileInputStream is = null;
         try {
-            FileInputStream is = new FileInputStream(httpRequest(url, dir, uid, ext));
+            is = new FileInputStream(httpRequest(url, dir, uid, ext));
             Image image;
             image = ExternalResource.uploadAsImage(is, e.getGroup());
             e.getGroup().sendMessage(image);
             coolCount.put(e.getGroup().getId(), coolCount.get(e.getGroup().getId()) + 1);
+            is.close();
         } catch (Exception ignored) {
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
         }
     }
 
     private static String httpRequest(String uri, String dir, String uid, String ext) throws Exception {
-        String path = "./data/Image/" + LocalDate.now() + "/" + dir + "/";
-        String filePath = path + uid + "." + ext;
         URL url = new URL(uri);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("referer", ""); //这是破解防盗链添加的参数
@@ -94,7 +102,23 @@ public class Thread extends java.lang.Thread {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67");
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5 * 1000);
-        InputStream inStream = conn.getInputStream();//通过输入流获取图片数据
+        InputStream inStream;//通过输入流获取图片数据
+        if (Objects.isNull(uid)) {
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = conn.getInputStream().read(buffer)) > -1 ) {
+                bao.write(buffer, 0, len);
+            }
+            bao.flush();
+            InputStream name = new ByteArrayInputStream(bao.toByteArray());
+            inStream = new ByteArrayInputStream(bao.toByteArray());
+            uid = DigestUtils.md5Hex(name);
+        } else {
+            inStream = conn.getInputStream();
+        }
+        String path = "./data/Image/" + dir + "/";
+        String filePath = path + uid + "." + ext;
         readInputStream(inStream, filePath, path);
         return filePath;
     }
