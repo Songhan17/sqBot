@@ -40,6 +40,7 @@ import java.util.Map;
 public final class JavaPluginMain extends JavaPlugin {
     public static JavaPluginMain INSTANCE = new JavaPluginMain();
     public static long PERM = 88888L;
+    public static long SETU = 99999L;
     short maxCount = 5;
     LocalDateTime preTime;
     boolean canSePic;
@@ -47,7 +48,7 @@ public final class JavaPluginMain extends JavaPlugin {
     public static Map<Long, Integer> coolCount;
 
     private JavaPluginMain() {
-        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.7")
+        super(new JvmPluginDescriptionBuilder("com.han.main", "2.2.8")
             .info("EG")
             .author("十七")
             .name("sq群管机器人")
@@ -141,8 +142,9 @@ public final class JavaPluginMain extends JavaPlugin {
                 }
             }
             String content = g.getMessage().contentToString().replace("色图", "涩图");
-            if (content.toLowerCase().contains("来点涩图") || (content.toLowerCase().contains("来点")
-                && content.toLowerCase().contains("涩图"))) {
+            if (list.get(SETU).contains(g.getGroup().getId())
+                && (content.toLowerCase().contains("来点涩图") || (content.toLowerCase().contains("来点")
+                && content.toLowerCase().contains("涩图")))) {
                 if (!preTimes.containsKey(g.getGroup().getId())) {
                     preTimes.put(g.getGroup().getId(), LocalDateTime.now().plusDays(-1));
                     coolCount.put(g.getGroup().getId(), 0);
@@ -174,6 +176,10 @@ public final class JavaPluginMain extends JavaPlugin {
         eventChannel.subscribeAlways(FriendMessageEvent.class, g -> {
             if (!list.containsKey(PERM)) {
                 list.put(PERM, new ArrayList<>());
+                BlackList.getInstance().save();
+            }
+            if (!list.containsKey(SETU)) {
+                list.put(SETU, new ArrayList<>());
                 BlackList.getInstance().save();
             }
             if (list.get(PERM).contains(g.getFriend().getId()) || g.getFriend().getId() == 839924598) {
@@ -246,6 +252,37 @@ public final class JavaPluginMain extends JavaPlugin {
                         g.getFriend().sendMessage(getPermission(list));
                         return;
                     }
+                    if (origin.contains("增加涩图群:")) {
+                        String[] split = origin.split(":");
+                        Long number = Long.parseLong(split[1]);
+                        if ((list.get(SETU)).contains(number)) {
+                            g.getFriend().sendMessage(String.format("QQ群号:%s 已在涩图群中", number));
+                            return;
+                        } else {
+                            list.get(SETU).add(number);
+                        }
+                        BlackList.getInstance().save();
+                        g.getFriend().sendMessage(getSETU(list));
+                        return;
+                    }
+                    if (origin.contains("移除涩图群:")) {
+                        String[] split = origin.split(":");
+                        Long number = Long.parseLong(split[1]);
+                        List<Long> target = list.get(SETU);
+                        for (Long qq : target) {
+                            if (qq.equals(number)) {
+                                target.remove(qq);
+                                break;
+                            }
+                        }
+                        BlackList.getInstance().save();
+                        g.getFriend().sendMessage(getSETU(list));
+                        return;
+                    }
+                    if (origin.contains("涩图群")) {
+                        g.getFriend().sendMessage(getSETU(list));
+                        return;
+                    }
                     if (origin.contains("删除key")) {
                         String[] split = origin.split(":");
                         Long number = Long.parseLong(split[1]);
@@ -280,7 +317,7 @@ public final class JavaPluginMain extends JavaPlugin {
         StringBuffer sb = new StringBuffer();
         if (!list.isEmpty()) {
             for (Map.Entry<Long, List<Long>> entry : list.entrySet()) {
-                if (entry.getKey() == PERM) {
+                if (entry.getKey() == PERM || entry.getKey() == SETU) {
                     continue;
                 }
                 sb.append("群号：").append(entry.getKey()).append("\r\n");
@@ -308,6 +345,16 @@ public final class JavaPluginMain extends JavaPlugin {
         sb.append("======================================").append("\r\n");
         sb.append("回复   增加:QQ号   增加权限人员。 ex:增加:123456").append("\r\n");
         sb.append("回复   移除:QQ号   移除权限人员。 ex:移除:123456");
+        return sb.toString();
+    }
+
+    private static String getSETU(Map<Long, List<Long>> list) {
+        StringBuffer sb = new StringBuffer();
+        List<Long> longs = list.get(SETU);
+        sb.append("涩图权限：").append(longs).append("\r\n");
+        sb.append("======================================").append("\r\n");
+        sb.append("回复   增加涩图群:QQ群号   增加QQ群。 ex:增加涩图群:123456").append("\r\n");
+        sb.append("回复   移除涩图群:QQ群号   移除QQ群。 ex:移除涩图群:123456");
         return sb.toString();
     }
 
